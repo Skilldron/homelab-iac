@@ -1,0 +1,20 @@
+#SPDX-License-Identifier: MIT-0
+---
+# defaults file for harold.proxmox
+proxmox_interfaces: |
+  source /etc/network/interfaces.d/*
+
+  auto lo
+  iface lo inet loopback
+
+  auto enp0s1
+  iface enp0s1 inet manual
+
+  # Bridge principal
+  auto vmbr0
+  iface vmbr0 inet static
+      address {{ ansible_all_ipv4_addresses[0] }}/24
+      gateway 192.168.1.1
+      bridge-ports enp0s1
+      bridge-stp off
+      bridge-fd 0
