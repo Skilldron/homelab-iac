@@ -1,0 +1,17 @@
+---
+- name: Install packages
+  hosts: proxmoxs
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Install required packages
+      ansible.builtin.package:
+        name:
+          - unzip
+          - curl
+          - python3
+          - sudo
+          - gnupg
+          - python3-apt
+          - python3-pip
+        state: present

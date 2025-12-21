@@ -7,14 +7,14 @@ proxmox_interfaces: |
   auto lo
   iface lo inet loopback
 
-  auto enp0s1
-  iface enp0s1 inet manual
+  auto enp90s0
+  iface enp90s0 inet manual
 
   # Bridge principal
   auto vmbr0
   iface vmbr0 inet static
       address {{ ansible_all_ipv4_addresses[0] }}/24
       gateway 192.168.1.1
-      bridge-ports enp0s1
+      bridge-ports enp90s0
       bridge-stp off
       bridge-fd 0
