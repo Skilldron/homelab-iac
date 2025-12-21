@@ -1,0 +1,10 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Restart vault
+  become: true
+  ansible.builtin.service:
+    name: vault
+    state: restarted
+
+- name: Reload vault
+  ansible.builtin.include_tasks: reload.yml

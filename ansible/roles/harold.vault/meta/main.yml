@@ -1,0 +1,12 @@
+#SPDX-License-Identifier: MIT-0
+galaxy_info:
+  author: harold
+  description: Install HashiCorp Vault and run it as a service
+  company: none
+  license: MLP2
+  min_ansible_version: 2.1
+  galaxy_tags:
+    - vault
+    - service
+    - security
+dependencies: []

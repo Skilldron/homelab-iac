@@ -1,0 +1,12 @@
+---
+- name: Install Proxmox
+  hosts: vaults
+  vars:
+    vault_version: "1.20.4"
+    vault_directory: /opt/vault
+    vault_user: vault
+    vault_group: vault
+    vault_ui: true
+    vault_tls_disabled: true
+  roles:
+    - role: harold.vault

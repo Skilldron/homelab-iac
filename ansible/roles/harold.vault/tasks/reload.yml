@@ -1,0 +1,10 @@
+- name: Reload Systemd
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Reload Service
+  become: true
+  ansible.builtin.service:
+    name: vault
+    state: reloaded

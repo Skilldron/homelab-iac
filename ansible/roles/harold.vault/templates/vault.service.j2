@@ -1,0 +1,25 @@
+[Unit]
+Description="HashiCorp Vault - A tool for managing pki and secrets"
+Documentation=https://www.vaultproject.io/docs/
+Requires=network-online.target
+After=network-online.target
+ConditionPathExists={{ vault_directory }}
+
+[Service]
+User={{ vault_user }}
+Group={{ vault_group }}
+ExecStart=/bin/sh -c 'exec {{ vault_directory }}/bin/vault server -config={{ vault_directory }}/config/vault.hcl'
+ExecReload=/bin/kill --signal HUP $MAINPID
+KillMode=process
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+StartLimitInterval=60
+StartLimitBurst=3
+LimitNOFILE=524288
+LimitNPROC=524288
+LimitCORE=0
+
+[Install]
+WantedBy=multi-user.target

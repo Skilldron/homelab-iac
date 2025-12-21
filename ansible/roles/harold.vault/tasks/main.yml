@@ -1,0 +1,88 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Create group vault
+  become: true
+  ansible.builtin.group:
+    name: "{{ vault_group }}"
+    state: present
+- name: Create user vault
+  become: true
+  ansible.builtin.user:
+    name: "{{ vault_group }}"
+    home: "{{ vault_directory }}"
+    shell: /bin/nologin
+    create_home: false
+    group: "{{ vault_group }}"
+    state: present
+- name: Create vault directories
+  become: true
+  ansible.builtin.file:
+    path: "{{ vault_directory }}/{{ item }}"
+    owner: vault
+    group: vault
+    mode: "0755"
+    state: directory
+  loop:
+    - data
+    - bin
+    - config
+- name: Check if vault bin exist
+  become: true
+  ansible.builtin.stat:
+    path: "{{ vault_directory }}/bin/vault"
+  register: vault_exist
+
+- name: Checking if Vault exists with correct version
+  when: vault_exist.stat.exists
+  block:
+    - name: Check vault version
+      become: true
+      ansible.builtin.shell:
+        cmd: "./vault --version | egrep -o '([0-9]{1,}\\.)+[0-9]{1,}'"
+        chdir: "{{ vault_directory }}/bin"
+      register: vault_version_installed
+      changed_when: false
+    - name: Stop Service if not good version
+      when: vault_version_installed.stdout != vault_version
+      become: true
+      ansible.builtin.service:
+        name: vault
+        state: stopped
+
+- name: Install Vault
+  become: true
+  ansible.builtin.unarchive:
+    src: "https://releases.hashicorp.com/vault/{{ vault_version }}/vault_{{ vault_version }}_linux_amd64.zip"
+    dest: "{{ vault_directory }}/bin"
+    owner: vault
+    group: vault
+    mode: "0755"
+    remote_src: true
+  when: not vault_exist.stat.exists or vault_version_installed.stdout != vault_version
+
+- name: Systemd unit
+  become: true
+  ansible.builtin.template:
+    src: vault.service.j2
+    dest: /etc/systemd/system/vault.service
+    force: true
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload vault
+- name: Install config
+  become: true
+  ansible.builtin.template:
+    src: vault.hcl.j2
+    dest: "{{ vault_directory }}/config/vault.hcl"
+    owner: vault
+    group: vault
+    mode: "0755"
+  notify: Restart vault
+  register: vault_config
+- name: Start vault
+  become: true
+  ansible.builtin.service:
+    name: vault
+    state: started
+  when: not vault_config.changed
