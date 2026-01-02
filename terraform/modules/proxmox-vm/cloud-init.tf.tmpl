@@ -1,0 +1,41 @@
+#cloud-config
+hostname: ${name}
+fqdn: ${fqdn}
+timezone: Europe/Paris
+
+ssh_pwauth: false
+disable_root: true
+
+users:
+  - name: ubuntu
+    groups: 
+      - sudo
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${ssh_key}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+  - name: ansible
+    groups:
+      - sudo
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${ssh_key_ansible}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+
+package_update: true
+packages:
+  - qemu-guest-agent
+  - curl
+  - net-tools
+
+write_files:
+  - path: /etc/homelab-role
+    permissions: "0644"
+    content: ${role}
+
+runcmd:
+  - systemctl enable qemu-guest-agent
+  - systemctl start qemu-guest-agent
+  - echo "done" > /tmp/cloud-config.done

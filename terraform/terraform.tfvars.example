@@ -1,0 +1,21 @@
+vms = {
+  "vm1" = {
+    cpu         = 2
+    cpu_sockets = 2
+    memory      = 4096
+    tags        = ["homelab", "prod"]
+    ip_address  = "192.168.10.10/24"
+    gateway     = "192.168.10.1"
+    role        = "role1"
+  }
+
+  "vm2" = {
+    cpu         = 1
+    cpu_sockets = 2
+    memory      = 2048
+    tags        = ["homelab", "test"]
+    ip_address  = "192.168.10.20/24"
+    gateway     = "192.168.10.1"
+    role        = "role2"
+  }
+}
