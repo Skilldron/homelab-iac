@@ -1,5 +1,5 @@
 ---
 - name: Install Proxmox
-  hosts: proxmoxs
+  hosts: proxmox_nodes
   roles:
     - role: harold.proxmox

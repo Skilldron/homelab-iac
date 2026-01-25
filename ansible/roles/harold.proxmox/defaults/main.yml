@@ -13,7 +13,7 @@ proxmox_interfaces: |
   # Bridge principal
   auto vmbr0
   iface vmbr0 inet static
-      address {{ ansible_all_ipv4_addresses[0] }}/24
+      address {{ ansible_host }}/24
       gateway 192.168.1.1
       bridge-ports enp90s0
       bridge-stp off

@@ -1,0 +1,9 @@
+all:
+
+  children:
+    lab_hardware:
+      children:
+        home_assistant:
+          hosts:
+            raspberry_server:
+              ansible_host: 192.168.1.20

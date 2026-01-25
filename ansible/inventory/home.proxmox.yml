@@ -1,0 +1,20 @@
+plugin: community.proxmox.proxmox
+
+url: https://192.168.1.10:8006
+user: terraform-prov@pve
+token_id: terraform
+token_secret: 2598a4db-5052-4b32-8126-e28bed69f4bf
+
+validate_certs: false
+want_proxmox_nodes_ansible_host: true
+want_facts : true
+
+compose:
+  ansible_host: proxmox_agent_interfaces[1]["ip-addresses"][0].split('/')[0]
+keyed_groups:
+  - key: proxmox_tags_parsed
+    separator: ""
+groups:
+  ubuntu_vms: "'ubuntu' in (proxmox_tags_parsed|list)"
+  k3s_workers: "'worker' in (proxmox_tags_parsed|list)"
+  homelab_vms: "'homelab' in (proxmox_tags_parsed|list)"

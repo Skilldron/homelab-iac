@@ -3,12 +3,12 @@
   become: true
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    regexp: "^{{ ansible_all_ipv4_addresses[0] }}"
+    regexp: "^{{ ansible_host }}"
     owner: root
     group: root
     mode: "0644"
     state: present
-    line: "{{ ansible_all_ipv4_addresses[0] }} {{ ansible_hostname }}.{{ domainname }} {{ ansible_hostname }}"
+    line: "{{ ansible_host }} {{ ansible_hostname }}.{{ domainname }} {{ ansible_hostname }}"
 - name: Remove loopback address from /etc/hosts
   become: true
   ansible.builtin.lineinfile:
@@ -93,14 +93,14 @@
   ansible.builtin.wait_for:
     port: 22
     host: "{{ ansible_host }}"
-    timeout: 330
+    timeout: 30
 - name: Try to curl Proxmox web GUI
   ansible.builtin.uri:
     url: "https://{{ ansible_host }}:8006"
     method: GET
-    return_content: yes
+    return_content: true
     status_code: 200
-    validate_certs: no
+    validate_certs: false
   register: result
   # until: result.status == 200
   # retries: 5
