@@ -14,7 +14,7 @@ terraform {
 provider "proxmox" {
   endpoint  = "https://192.168.1.10:8006/" # 100.64.136.30 when in VPN, else use local IP address of Proxmox VE host 192.168.1.10
   api_token = var.api_token
-  insecure  = true # Should be turned off to false, for now self-signed certs are used until I setup proper CA signed certs
+  insecure  = true # TODO: Should be turned off to false, for now self-signed certs are used until I setup proper CA signed certs
   ssh {
     agent       = false
     private_key = file("~/.ssh/terraform_homelab")
