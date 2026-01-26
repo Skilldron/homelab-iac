@@ -1,0 +1,78 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for harold.bootstrap
+- name: Update apt cache
+  become: true
+  ansible.builtin.package:
+    update_cache: true
+- name: Install basics packages
+  become: true
+  ansible.builtin.package:
+    name:
+      - unzip
+      - curl
+      - sudo
+      - git
+      - gnupg
+      - zsh
+      - htop
+      - vim
+      - neovim
+      - fzf
+    update_cache: true
+    state: present
+
+- name: Get all system users
+  ansible.builtin.getent:
+    database: passwd
+
+- name: Select users with interactive shells
+  ansible.builtin.set_fact:
+    bash_users: |
+      {{
+        getent_passwd
+        | dict2items
+        | selectattr('value', 'contains', '/bin/bash')
+        | map(attribute='key')
+      }}
+
+- name: Select users with interactive shells
+  ansible.builtin.set_fact:
+    zsh_users: |
+      {{
+        getent_passwd
+        | dict2items
+        | selectattr('value', 'contains', '/bin/zsh')
+        | map(attribute='key')
+      }}
+
+- name: Install Zinit for each user
+  become: false
+  become_user: "{{ item }}"
+  ansible.builtin.shell: |
+    set -e
+    ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
+    if [ ! -d "$ZINIT_HOME/.git" ]; then
+      git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+    fi
+  args:
+    creates: "{{ lookup('ansible.builtin.env', 'HOME') }}/.local/share/zinit/zinit.git/zinit.zsh"
+  loop: "{{ zsh_users + bash_users }}"
+
+- name: Set Zsh as default shell
+  become: true
+  ansible.builtin.user:
+    name: "{{ item }}"
+    shell: /bin/zsh
+  loop: "{{ zsh_users + bash_users }}"
+
+- name: Deploy .zshrc
+  become: true
+  ansible.builtin.copy:
+    src: zshrc
+    dest: "{{ getent_passwd[item][4] }}/.zshrc"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0644"
+  loop: "{{ zsh_users + bash_users }}"
+  when: item != "root"
