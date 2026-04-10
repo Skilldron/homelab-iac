@@ -22,11 +22,102 @@
     update_cache: true
     state: present
 
+- name: Initialize LXC base configuration
+  when: bootstrap_lxc_init | bool
+  block:
+    - name: Check root authorized keys file exists
+      become: true
+      ansible.builtin.stat:
+        path: /root/.ssh/authorized_keys
+      register: bootstrap_root_authorized_keys_stat
+
+    - name: Fail when root authorized keys file is missing
+      ansible.builtin.fail:
+        msg: >-
+          LXC init requires /root/.ssh/authorized_keys to exist so keys can be copied to bootstrap users.
+      when: not bootstrap_root_authorized_keys_stat.stat.exists
+
+    - name: Read root authorized keys
+      become: true
+      ansible.builtin.slurp:
+        path: /root/.ssh/authorized_keys
+      register: bootstrap_root_authorized_keys_file
+
+    - name: Build root authorized keys list
+      ansible.builtin.set_fact:
+        bootstrap_root_authorized_keys: >-
+          {{
+            (bootstrap_root_authorized_keys_file.content | b64decode).splitlines()
+            | map('trim')
+            | reject('equalto', '')
+            | reject('match', '^#')
+            | list
+          }}
+
+    - name: Fail when no usable root authorized key is found
+      ansible.builtin.fail:
+        msg: No usable SSH public key found in /root/.ssh/authorized_keys.
+      when: bootstrap_root_authorized_keys | length == 0
+
+    - name: Ensure bootstrap users exist
+      become: true
+      ansible.builtin.user:
+        name: "{{ item }}"
+        state: present
+        create_home: true
+        shell: /bin/bash
+        groups: sudo
+        append: true
+      loop: "{{ bootstrap_lxc_users }}"
+
+    - name: Build user and key pairs for authorized_keys
+      ansible.builtin.set_fact:
+        bootstrap_user_authorized_key_pairs: "{{ bootstrap_lxc_users | product(bootstrap_root_authorized_keys) | list }}"
+
+    - name: Install SSH keys for bootstrap users
+      become: true
+      ansible.posix.authorized_key:
+        user: "{{ item.0 }}"
+        key: "{{ item.1 }}"
+        state: present
+        manage_dir: true
+      loop: "{{ bootstrap_user_authorized_key_pairs }}"
+
+    - name: Configure passwordless sudo for bootstrap users
+      become: true
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/90-bootstrap-users
+        owner: root
+        group: root
+        mode: "0440"
+        validate: /usr/sbin/visudo -cf %s
+        content: |
+          {% for user in bootstrap_sudo_nopasswd_users %}
+          {{ user }} ALL=(ALL) NOPASSWD:ALL
+          {% endfor %}
+
+    - name: Set timezone
+      become: true
+      ansible.builtin.timezone:
+        name: "{{ bootstrap_timezone }}"
+
+    - name: Deploy SSH hardening drop-in configuration
+      become: true
+      ansible.builtin.template:
+        src: 99-bootstrap-hardening.conf.j2
+        dest: /etc/ssh/sshd_config.d/99-bootstrap-hardening.conf
+        owner: root
+        group: root
+        mode: "0644"
+        validate: /usr/sbin/sshd -t -f %s
+      notify: Reload SSH
+      when: bootstrap_ssh_hardening | bool
+
 - name: Get all system users
   ansible.builtin.getent:
     database: passwd
 
-- name: Select users with interactive shells
+- name: Select users with bash shells
   ansible.builtin.set_fact:
     bash_users: |
       {{
@@ -36,7 +127,7 @@
         | map(attribute='key')
       }}
 
-- name: Select users with interactive shells
+- name: Select users with zsh shells
   ansible.builtin.set_fact:
     zsh_users: |
       {{

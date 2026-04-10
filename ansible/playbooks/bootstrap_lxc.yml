@@ -1,0 +1,9 @@
+---
+- name: Bootstrap LXC containers
+  hosts: proxmox_homelab_lxc
+  remote_user: root
+  gather_facts: true
+  vars:
+    bootstrap_lxc_init: true
+  roles:
+    - role: harold.bootstrap

@@ -1,6 +1,0 @@
----
-- name: Boostrap servers
-  hosts: bastion
-  gather_facts: true
-  roles:
-    - role: harold.boostrap

@@ -1,3 +1,13 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # defaults file for harold.bootstrap
+bootstrap_lxc_init: false
+bootstrap_timezone: Europe/Paris
+bootstrap_lxc_users:
+  - ansible
+  - ubuntu
+bootstrap_sudo_nopasswd_users:
+  - ansible
+  - ubuntu
+bootstrap_ssh_hardening: true
+bootstrap_sshd_service_name: ssh

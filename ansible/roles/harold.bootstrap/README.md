@@ -1,38 +1,32 @@
-Role Name
-=========
+# harold.bootstrap
 
-A brief description of the role goes here.
+Bootstrap role used to prepare hosts with base packages and shell tooling.
 
-Requirements
-------------
+## LXC init mode
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Set `bootstrap_lxc_init: true` to enable first-boot initialization for LXC
+containers that do not use cloud-init.
 
-Role Variables
---------------
+When enabled, the role:
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+- ensures `/root/.ssh/authorized_keys` exists
+- creates `ansible` and `ubuntu` users
+- copies root SSH authorized keys to those users
+- configures `NOPASSWD` sudo for `ansible` and `ubuntu`
+- sets the host timezone (`bootstrap_timezone`)
+- deploys SSH hardening drop-in
 
-Dependencies
-------------
+### Main variables
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+- `bootstrap_lxc_init` (bool, default: `false`)
+- `bootstrap_timezone` (string, default: `Europe/Paris`)
+- `bootstrap_lxc_users` (list, default: `["ansible", "ubuntu"]`)
+- `bootstrap_sudo_nopasswd_users` (list, default: `["ansible", "ubuntu"]`)
+- `bootstrap_ssh_hardening` (bool, default: `true`)
+- `bootstrap_sshd_service_name` (string, default: `ssh`)
 
-Example Playbook
-----------------
+### Example run for LXC
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
-License
--------
-
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+```bash
+ansible-playbook ansible/playbooks/bootstrap.yml -l adguard -e bootstrap_lxc_init=true
+```
