@@ -10,7 +10,12 @@ want_proxmox_nodes_ansible_host: true
 want_facts : true
 
 compose:
-  ansible_host: proxmox_agent_interfaces[1]["ip-addresses"][0].split('/')[0]
+  ansible_host: >
+      (proxmox_ipconfig0.ip.split('/')[0])
+      if (proxmox_vmtype == "qemu")
+      else (proxmox_net0.ip.split('/')[0])
+      if (proxmox_vmtype == "lxc")
+      else inventory_hostname
 keyed_groups:
   - key: proxmox_tags_parsed
     separator: ""
