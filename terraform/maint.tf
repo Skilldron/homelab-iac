@@ -34,3 +34,17 @@ module "vms" {
   ip_address  = each.value.ip_address
   gateway     = each.value.gateway
 }
+
+module "adguard" {
+  source       = "./modules/adguard-ct"
+  api_token    = var.api_token
+  node_name    = var.virtual_environment_node_name
+  datastore_id = var.datastore_id
+
+  name           = "adguard-home"
+  image_url      = "http://download.proxmox.com/images/system/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+  ip_address     = "192.168.1.230/24"
+  gateway        = "192.168.1.1"
+  network_bridge = "vmbr0"
+  tags           = ["dns", "adguard"]
+}
