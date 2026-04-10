@@ -1,4 +1,4 @@
-resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
+resource "proxmox_download_file" "ubuntu_cloud_image" {
   content_type = "iso"
   datastore_id = var.datastore_id
   node_name    = var.node_name
@@ -43,7 +43,7 @@ resource "proxmox_virtual_environment_vm" "this" {
 
   disk {
     datastore_id = var.datastore_id
-    file_id      = proxmox_virtual_environment_download_file.ubuntu_cloud_image.id
+    file_id      = proxmox_download_file.ubuntu_cloud_image.id
     interface    = "scsi0"
     size         = var.disk_size
     iothread     = true

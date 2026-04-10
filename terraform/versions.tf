@@ -6,7 +6,7 @@ terraform {
     }
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.89.1"
+      version = "0.101.0"
     }
   }
 }
@@ -22,7 +22,7 @@ provider "proxmox" {
     # This block is only used when i'm using the VPN
     node {
       name    = "homelab"
-      address = "192.168.1.10" #"192.168.1.10"
+      address = "192.168.1.10"
     }
   }
 }
