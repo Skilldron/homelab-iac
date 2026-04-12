@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Reload systemd
+  become: true
+  ansible.builtin.systemd_service:
+    name: "{{ adguard_home_service_name }}"
+    daemon_reload: true
+
+- name: Restart adguard-home
+  become: true
+  ansible.builtin.systemd_service:
+    name: "{{ adguard_home_service_name }}"
+    state: restarted
+    daemon_reload: true

@@ -35,8 +35,39 @@ write_files:
   - path: /etc/homelab-role
     permissions: "0644"
     content: ${role}
+  - path: /etc/network/interfaces
+    permissions: "0644"
+    content: |
+      auto lo
+      iface lo inet loopback
+
+      auto eth0
+      iface eth0 inet static
+        address ${ip_address}
+        gateway ${gateway}
+  - path: /etc/netplan/99-disable-networkd.yaml
+    permissions: "0600"
+    content: |
+      network:
+        version: 2
+        renderer: networkd
+        ethernets:
+          eth0:
+            dhcp4: false
+            dhcp6: false
+            %{ if role == "adguard-dns" ~}
+            accept-ra: false
+            %{ endif ~}
+            addresses:
+              - ${ip_address}
+            routes:
+              - to: default
+                via: ${gateway}
+            nameservers:
+              addresses: %{ if role == "adguard-dns" }[ "127.0.0.1", "1.1.1.1" ]%{ else }[ "192.168.1.201", "192.168.1.1" ]%{ endif }
 
 runcmd:
   - systemctl enable qemu-guest-agent
   - systemctl start qemu-guest-agent
+  - netplan apply
   - echo "done" > /tmp/cloud-config.done

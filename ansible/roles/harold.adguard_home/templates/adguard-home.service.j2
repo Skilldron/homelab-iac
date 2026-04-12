@@ -1,0 +1,28 @@
+[Unit]
+Description=AdGuard Home
+Documentation=https://adguard-dns.io/kb/adguard-home/getting-started/
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists={{ adguard_home_binary_path }}
+
+[Service]
+User={{ adguard_home_user }}
+Group={{ adguard_home_group }}
+WorkingDirectory={{ adguard_home_data_dir }}
+ExecStart={{ adguard_home_binary_path }} --config {{ adguard_home_config_file }} --work-dir {{ adguard_home_data_dir }} --pidfile {{ adguard_home_pid_file }}{% if not adguard_home_allow_auto_update %} --no-check-update{% endif %}{% if adguard_home_service_extra_args %} {{ adguard_home_service_extra_args }}{% endif %}
+
+Restart=on-failure
+RestartSec=5s
+RuntimeDirectory=adguard-home
+RuntimeDirectoryMode=0750
+UMask=0027
+
+AmbientCapabilities={{ adguard_home_service_capabilities | join(' ') }}
+CapabilityBoundingSet={{ adguard_home_service_capabilities | join(' ') }}
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths={{ adguard_home_config_dir }} {{ adguard_home_data_dir }}
+
+[Install]
+WantedBy=multi-user.target

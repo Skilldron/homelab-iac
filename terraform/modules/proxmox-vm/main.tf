@@ -10,6 +10,8 @@ resource "proxmox_virtual_environment_file" "cloud_init" {
       ssh_key         = trimspace(data.local_file.ssh_public_key_harold.content)
       role            = "${var.role}"
       ssh_key_ansible = trimspace(data.local_file.ssh_public_key_ansible.content)
+      ip_address      = var.ip_address
+      gateway         = var.gateway
     })
 
     file_name = "cloud-init-${var.name}.yaml"
