@@ -55,9 +55,9 @@ write_files:
           eth0:
             dhcp4: false
             dhcp6: false
-            %{ if role == "adguard-dns" ~}
+            %{ if role == "adguard-dns" }
             accept-ra: false
-            %{ endif ~}
+            %{ endif }
             addresses:
               - ${ip_address}
             routes:
