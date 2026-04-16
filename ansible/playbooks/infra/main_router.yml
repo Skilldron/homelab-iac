@@ -1,0 +1,49 @@
+---
+- name: Install Traefik main router
+  hosts: infra
+  become: true
+  vars:
+    pip_install_packages:
+      - name: docker
+    docker_users:
+      - "{{ ansible_user_id }}"
+    cloudflare_api_token: "{{ lookup('env', 'CLOUDFLARE_API_TOKEN') }}"
+    traefik_dynamic_config:
+      http:
+        routers:
+          adguard:
+            rule: "Host(`adguard.haroldd.dev`)"
+            entryPoints:
+              - websecure
+            service: adguard
+
+          proxmox:
+            rule: "Host(`proxmox.haroldd.dev`)"
+            entryPoints:
+              - websecure
+            service: proxmox
+
+        serversTransports:
+          pve:
+            insecureSkipVerify: true
+
+        services:
+          adguard:
+            loadBalancer:
+              servers:
+                - url: "http://192.168.1.201"
+
+          proxmox:
+            loadBalancer:
+              serversTransport: pve
+              servers:
+                - url: "https://192.168.1.10:8006"
+  pre_tasks:
+    - name: Install Python Docker SDK
+      ansible.builtin.include_role:
+        name: geerlingguy.pip
+    - name: Ensure Docker is installed
+      ansible.builtin.include_role:
+        name: geerlingguy.docker
+  roles:
+    - role: harold.traefik

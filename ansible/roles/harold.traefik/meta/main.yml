@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT-0
+galaxy_info:
+  author: harold
+  description: Install Traefik as main router for the homelab using docker
+  company: none
+  license: MIT
+  min_ansible_version: "2.15"
+  galaxy_tags:
+    - traefik
+    - router
+    - docker
+collections:
+  - community.docker
+dependencies: []
