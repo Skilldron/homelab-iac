@@ -8,6 +8,11 @@ variable "name" {
   description = "Name of the VM"
 }
 
+variable "vm_id" {
+  type        = number
+  description = "Fixed Proxmox VM ID"
+}
+
 variable "domain" {
   type        = string
   description = "Domain for FQDN"

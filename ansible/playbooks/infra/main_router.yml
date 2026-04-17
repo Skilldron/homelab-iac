@@ -23,11 +23,21 @@
               - websecure
             service: proxmox
 
+          vscode:
+            rule: "Host(`code.haroldd.dev`)"
+            entryPoints:
+              - websecure
+            service: vscode
+
         serversTransports:
           pve:
             insecureSkipVerify: true
 
         services:
+          vscode:
+            loadBalancer:
+              servers:
+                - url: "http://192.168.1.200:8080"
           adguard:
             loadBalancer:
               servers:

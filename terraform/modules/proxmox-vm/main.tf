@@ -21,8 +21,10 @@ resource "proxmox_virtual_environment_file" "cloud_init" {
 
 resource "proxmox_virtual_environment_vm" "this" {
   name      = var.name
+  vm_id     = var.vm_id
   node_name = var.node_name
   tags      = var.tags
+
 
   description = "VM managed by Terraform"
 

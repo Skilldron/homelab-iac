@@ -18,6 +18,7 @@ variable "datastore_id" {
 variable "vms" {
   description = "List of VMs to create"
   type = map(object({
+    vm_id       = number
     cpu         = number
     memory      = number
     tags        = list(string)

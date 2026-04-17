@@ -19,6 +19,7 @@ module "vms" {
   for_each = var.vms
 
   name         = each.key
+  vm_id        = each.value.vm_id
   node_name    = var.virtual_environment_node_name
   role         = each.value.role
   template_id  = module.ubuntu_template.template_id
