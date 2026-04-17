@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "redhat.ansible",
+        "usernamehw.errorlens",
+        "eamodio.gitlens",
+        "hashicorp.terraform",
+        "redhat.vscode-yaml",
+        "ms-python.python",
+        "ms-python.debugpy"
+    ]
+}
