@@ -1,14 +1,8 @@
 # SPDX-License-Identifier: MIT-0
 ---
-- name: Reload systemd
+- name: Restart Traefik
   become: true
-  ansible.builtin.systemd_service:
-    name: "{{ adguard_home_service_name }}"
-    daemon_reload: true
-
-- name: Restart adguard-home
-  become: true
-  ansible.builtin.systemd_service:
-    name: "{{ adguard_home_service_name }}"
-    state: restarted
-    daemon_reload: true
+  community.docker.docker_container:
+    name: traefik
+    state: started
+    restart: true

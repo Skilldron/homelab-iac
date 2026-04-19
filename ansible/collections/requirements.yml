@@ -10,10 +10,13 @@ collections:
     version: 4.0.0
 
   - name: community.docker
-  - name: geerlingguy.docker
-  - name: geerlingguy.pip
+  - name: community.general
 
   # TO-DO: User's own collections can also be specified as mention below.
   # - name: my_organization.my_collection
   #   version: 1.2.3
   #   source: https://github.com/my_organization/my_collection.git
+
+roles:
+  - name: geerlingguy.docker
+  - name: geerlingguy.pip
