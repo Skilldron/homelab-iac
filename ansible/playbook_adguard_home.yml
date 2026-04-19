@@ -1,0 +1,8 @@
+---
+- name: Install AdGuard Home
+  hosts: adguard
+  vars:
+    adguard_home_version: "0.107.74"
+    adguard_home_allow_auto_update: true
+  roles:
+    - role: homelab.haroldd.adguard_home

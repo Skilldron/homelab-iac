@@ -1,0 +1,17 @@
+{
+    "folders": [
+        {
+            "path": "terraform",
+            "name": "🏗️ Terraform (Infra)"
+        },
+        {
+            "path": "ansible",
+            "name": "⚙️ Ansible (Config)"
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/.git": true
+        }
+    }
+}

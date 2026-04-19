@@ -1,5 +1,0 @@
-traefik_domain: "haroldd.dev"
-traefik_email: "admin@haroldd.dev"
-cloudflare_api_token: "CHANGE_ME"
-traefik_image: "traefik:v3.6.13"
-traefik_network: "web"

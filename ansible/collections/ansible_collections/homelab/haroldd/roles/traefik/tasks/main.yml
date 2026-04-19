@@ -1,0 +1,39 @@
+- name: Create config directory
+  ansible.builtin.file:
+    path: /opt/traefik
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Generate static config
+  ansible.builtin.template:
+    src: traefik.yml.j2
+    dest: /opt/traefik/traefik.yml
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Generate dynamic config
+  ansible.builtin.template:
+    src: dynamic.yml.j2
+    dest: /opt/traefik/dynamic.yml
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Deploy Traefik
+  community.docker.docker_container:
+    name: traefik
+    image: "{{ traefik_image }}"
+    restart_policy: always
+    ports:
+      - "80:80"
+      - "443:443"
+    env:
+      CF_DNS_API_TOKEN: "{{ traefik_cloudflare_api_token }}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - /opt/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - traefik_letsencrypt:/letsencrypt

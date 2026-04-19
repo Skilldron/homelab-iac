@@ -1,8 +1,0 @@
-#SPDX-License-Identifier: MIT-0
----
-# handlers file for harold.bootstrap
-- name: Reload SSH
-  become: true
-  ansible.builtin.service:
-    name: "{{ bootstrap_sshd_service_name }}"
-    state: reloaded
