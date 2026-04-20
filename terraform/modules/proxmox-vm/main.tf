@@ -28,6 +28,12 @@ resource "proxmox_virtual_environment_vm" "this" {
 
   description = "VM managed by Terraform"
 
+  lifecycle {
+    ignore_changes = [
+      initialization
+    ]
+  }
+
   clone {
     vm_id = var.template_id
   }
