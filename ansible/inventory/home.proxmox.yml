@@ -1,11 +1,11 @@
 plugin: community.proxmox.proxmox
 
-url: https://192.168.1.10:8006
+url: https://proxmox.haroldd.dev
 user: terraform-prov@pve
 token_id: terraform
 token_secret: 2598a4db-5052-4b32-8126-e28bed69f4bf
 
-validate_certs: false
+validate_certs: true
 want_proxmox_nodes_ansible_host: true
 want_facts : true
 
