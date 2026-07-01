@@ -1,7 +1,7 @@
 ---
 k3s_kubectl_version: "latest" # Could be : "latest" or a specific version like "v1.27.4"
 k3s_home_user: "/home/ubuntu"
-
+k3s_user_name: "ubuntu"
 # K3S node role: "server" (control-plane) or "agent" (joins an existing cluster)
 k3s_role: "server"
 # K3S version to install. Empty = latest stable, or pin e.g. "v1.30.2+k3s1"

@@ -4,6 +4,10 @@
 ### Ansible ###
 *.retry
 
+# Ansible Vault password file — NEVER commit this
+.vault_pass
+*.vault_pass
+
 ### Docusaurus ###
 # Docusaurus cache and generated files
 .docusaurus

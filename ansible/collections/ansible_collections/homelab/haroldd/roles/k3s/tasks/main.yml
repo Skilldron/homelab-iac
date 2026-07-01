@@ -117,6 +117,25 @@
         K3S_TOKEN: "{{ k3s_token if k3s_role == 'agent' else '' }}"
       when: not k3s_binary.stat.exists
 
+    - name: "Ensure ~/.kube directory exists"
+      ansible.builtin.file:
+        path: "{{ k3s_home_user }}/.kube"
+        state: directory
+        owner: "{{ k3s_user_name }}"
+        group: "{{ k3s_user_name }}"
+        mode: '0700'
+      when: k3s_role == 'server'
+
+    - name: "Install kubeconfig for kubectl"
+      ansible.builtin.copy:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "{{ k3s_home_user }}/.kube/config"
+        remote_src: true
+        owner: "{{ k3s_user_name }}"
+        group: "{{ k3s_user_name }}"
+        mode: '0600'
+      when: k3s_role == 'server'
+
     - name: "Ensure K3S service is started and enabled"
       ansible.builtin.systemd_service:
         name: "{{ 'k3s' if k3s_role == 'server' else 'k3s-agent' }}"
