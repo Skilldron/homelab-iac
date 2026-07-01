@@ -1,0 +1,124 @@
+---
+# tasks file for homelab.haroldd.k3s
+
+- name: "Disabling UFW rules for K3S"
+  block:
+    - name: "Ensure UFW is installed"
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+      become: true
+
+    - name: "Ensure UFW is disabled"
+      community.general.ufw:
+        state: disabled
+      become: true
+
+- name: "Install kubectl binary"
+  become: true
+  block:
+    - name: "Resolve kubectl version"
+      ansible.builtin.uri:
+        url: https://dl.k8s.io/release/stable.txt
+        return_content: true
+      register: k3s_kubectl_stable
+      changed_when: false
+      when: k3s_kubectl_version == 'latest'
+
+    - name: "Set kubectl version to install"
+      ansible.builtin.set_fact:
+        k3s_kubectl_install_version: >-
+          {{ k3s_kubectl_stable.content | trim
+             if k3s_kubectl_version == 'latest'
+             else k3s_kubectl_version }}
+
+    - name: "Download kubectl binary"
+      ansible.builtin.get_url:
+        url: "https://dl.k8s.io/release/{{ k3s_kubectl_install_version }}/bin/linux/amd64/kubectl"
+        dest: "/usr/local/bin/kubectl"
+        mode: '0755'
+
+- name: "Configure kubectl zsh completion"
+  block:
+    - name: "Check if zsh is installed"
+      ansible.builtin.command: command -v zsh
+      register: k3s_zsh_check
+      changed_when: false
+      failed_when: false
+
+    - name: "Enable kubectl completion in ~/.zshrc"
+      ansible.builtin.lineinfile:
+        path: "{{ k3s_home_user }}/.zshrc"
+        line: "source <(kubectl completion zsh)"
+        create: true
+        mode: '0644'
+        state: present
+      when: k3s_zsh_check.rc == 0
+
+- name: "Install K3S"
+  become: true
+  block:
+    - name: "Validate agent join parameters"
+      ansible.builtin.assert:
+        that:
+          - k3s_server_url | length > 0
+          - k3s_token | length > 0
+        fail_msg: "k3s_role=agent requires 'k3s_server_url' and 'k3s_token' to be set"
+      when: k3s_role == 'agent'
+
+    - name: "Check whether K3S is already installed"
+      ansible.builtin.stat:
+        path: /usr/local/bin/k3s
+      register: k3s_binary
+
+    - name: "Get installed K3S version"
+      ansible.builtin.command: k3s --version
+      register: k3s_installed_raw
+      changed_when: false
+      when: k3s_binary.stat.exists
+
+    - name: "Set installed K3S version fact"
+      ansible.builtin.set_fact:
+        k3s_installed_version: "{{ k3s_installed_raw.stdout_lines[0].split()[2] }}"
+      when: k3s_binary.stat.exists
+
+    - name: "Refuse unsupported K3S version change"
+      ansible.builtin.fail:
+        msg: >-
+          K3S {{ k3s_installed_version }} is already installed but {{ k3s_version }}
+          was requested.
+          {{ 'Upgrades'
+             if (k3s_version | regex_replace('^v', '') | regex_replace('\+.*$', ''))
+                is version(k3s_installed_version | regex_replace('^v', '') | regex_replace('\+.*$', ''), '>', version_type='semver')
+             else 'Downgrades'
+             if (k3s_version | regex_replace('^v', '') | regex_replace('\+.*$', ''))
+                is version(k3s_installed_version | regex_replace('^v', '') | regex_replace('\+.*$', ''), '<', version_type='semver')
+             else 'Version changes' }}
+          are not handled by this role — use the k3s system-upgrade-controller.
+      when:
+        - k3s_binary.stat.exists
+        - k3s_version | length > 0
+        - k3s_version != k3s_installed_version
+
+    - name: "Download K3S install script"
+      ansible.builtin.get_url:
+        url: https://get.k3s.io
+        dest: /usr/local/bin/k3s-install.sh
+        mode: '0755'
+      when: not k3s_binary.stat.exists
+
+    - name: "Run K3S install script"
+      ansible.builtin.command:
+        cmd: /usr/local/bin/k3s-install.sh
+        creates: /usr/local/bin/k3s
+      environment:
+        INSTALL_K3S_VERSION: "{{ k3s_version }}"
+        K3S_URL: "{{ k3s_server_url if k3s_role == 'agent' else '' }}"
+        K3S_TOKEN: "{{ k3s_token if k3s_role == 'agent' else '' }}"
+      when: not k3s_binary.stat.exists
+
+    - name: "Ensure K3S service is started and enabled"
+      ansible.builtin.systemd_service:
+        name: "{{ 'k3s' if k3s_role == 'server' else 'k3s-agent' }}"
+        state: started
+        enabled: true

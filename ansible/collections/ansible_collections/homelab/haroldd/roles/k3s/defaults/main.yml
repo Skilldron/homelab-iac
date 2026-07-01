@@ -1,0 +1,13 @@
+---
+k3s_kubectl_version: "latest" # Could be : "latest" or a specific version like "v1.27.4"
+k3s_home_user: "/home/ubuntu"
+
+# K3S node role: "server" (control-plane) or "agent" (joins an existing cluster)
+k3s_role: "server"
+# K3S version to install. Empty = latest stable, or pin e.g. "v1.30.2+k3s1"
+k3s_version: ""
+# Required when k3s_role == "agent": URL of an existing server, e.g. "https://192.168.1.10:6443"
+k3s_server_url: ""
+# Required when k3s_role == "agent": node-token from the server
+# (found on the server at /var/lib/rancher/k3s/server/node-token)
+k3s_token: ""
