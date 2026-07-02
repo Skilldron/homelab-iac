@@ -1,4 +1,7 @@
+configs:
+  params:
+    server.insecure: true
+
 server:
   service:
-    type: NodePort
-    nodePortHttps: 30443
+    type: ClusterIP
