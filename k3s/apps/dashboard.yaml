@@ -11,6 +11,22 @@ spec:
     chart: headlamp
     repoURL: https://kubernetes-sigs.github.io/headlamp/
     targetRevision: 0.43.0
+    helm:
+      values: |
+        ingress:
+          enabled: true
+          ingressClassName: traefik
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+          hosts:
+            - host: dashboard.k3s.haroldd.dev
+              paths:
+                - path: /
+                  type: ImplementationSpecific
+          tls:
+            - secretName: headlamp-tls
+              hosts:
+                - dashboard.k3s.haroldd.dev
   destination:
     name: "in-cluster"
     namespace: kube-system
