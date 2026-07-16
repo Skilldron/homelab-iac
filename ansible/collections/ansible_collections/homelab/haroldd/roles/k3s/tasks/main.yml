@@ -14,6 +14,27 @@
         state: disabled
       become: true
 
+- name: "Ensure required packages are installed"
+  block:
+    - name: "Longhorn dependencies"
+      become: true
+      ansible.builtin.apt:
+        name:
+          - curl
+          - util-linux
+          - grep
+          - gawk
+          - open-iscsi
+          - nfs-common
+        state: present
+        update_cache: true
+    - name: "Activate iscsid"
+      become: true
+      ansible.builtin.systemd:
+        name: iscsid
+        enabled: true
+        state: started
+
 - name: "Install kubectl binary"
   become: true
   block:
