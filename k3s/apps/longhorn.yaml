@@ -26,6 +26,9 @@ spec:
           replicas: 1
         persistence:
           defaultClass: false
+        preUpgradeChecker:
+          jobEnabled: false
+# preUpgradeChecker.jobEnabled: false is required when using ArgoCD
   destination:
     name: "in-cluster"
     namespace: longhorn-system
