@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cdb
+  namespace: argocd
+  annotations:
+    description: "Personal CouchDB instance for self-hosted applications"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    chart: couchdb
+    repoURL: https://apache.github.io/couchdb-helm
+    targetRevision: 4.6.3
+    helm:
+      values: |
+        clusterSize: 1
+        couchdbConfig:
+          couchdb:
+            uuid: "23CE9777805A4B73821C8CF127D28D12"
+            single_node: true
+          chttpd:
+            require_valid_user: true
+            enable_cors: true
+            max_http_request_size: 4294967296
+          chttpd_auth:
+            require_valid_user: true
+          httpd:
+            WWW-Authenticate: 'Basic realm="administrator"'
+          cors:
+            credentials: true
+            origins: "app://obsidian.md,capacitor://localhost,http://localhost"
+            headers: "accept, authorization, content-type, origin, referer"
+            methods: "GET, PUT, POST, HEAD, DELETE"
+
+        ingress:
+          enabled: true
+          className: traefik
+          hosts:
+            - cdb.k3s.haroldd.dev
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+          tls:
+            - secretName: couchdb-tls
+              hosts:
+                - cdb.k3s.haroldd.dev
+
+        persistentVolume:
+          enabled: true
+          storageClass: longhorn
+          size: 5Gi
+        createAdminSecret: false
+# Secret credentials will be created manually for now
+  destination:
+    name: "in-cluster"
+    namespace: personal-apps
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
