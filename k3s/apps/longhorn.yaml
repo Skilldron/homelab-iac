@@ -28,6 +28,10 @@ spec:
           defaultClass: false
         preUpgradeChecker:
           jobEnabled: false
+        defaultBackupStore:
+          backupTarget: s3://homelab-bk@auto/
+          backupTargetCredentialSecret: r2-backup-secret
+          pollInterval: 300
 # preUpgradeChecker.jobEnabled: false is required when using ArgoCD
   destination:
     name: "in-cluster"
