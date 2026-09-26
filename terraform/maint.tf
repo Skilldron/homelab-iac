@@ -1,16 +1,19 @@
-module "ubuntu_template" {
-  source    = "./modules/proxmox-ubuntu-template"
-  api_token = var.api_token
+# The template (VM 100) already exists and is referenced by var.template_id.
+# It is not managed here anymore because proxmox_download_file cannot be imported
+# (state lost). Uncomment to build a new template, e.g. for a new Ubuntu release.
+# module "ubuntu_template" {
+#   source    = "./modules/proxmox-ubuntu-template"
+#   api_token = var.api_token
 
-  name      = "ubuntu-jammy-template"
-  node_name = var.virtual_environment_node_name
+#   name      = "ubuntu-jammy-template"
+#   node_name = var.virtual_environment_node_name
 
-  datastore_id = var.datastore_id
-  image_url    = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+#   datastore_id = var.datastore_id
+#   image_url    = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
 
-  network_bridge = "vmbr0"
+#   network_bridge = "vmbr0"
 
-}
+# }
 
 module "vms" {
   source    = "./modules/proxmox-vm"
@@ -22,7 +25,7 @@ module "vms" {
   vm_id        = each.value.vm_id
   node_name    = var.virtual_environment_node_name
   role         = each.value.role
-  template_id  = module.ubuntu_template.template_id
+  template_id  = var.template_id
   datastore_id = var.datastore_id
 
   #   cloud_init_file_id = proxmox_virtual_environment_file.user_data_cloud_config.id

@@ -15,6 +15,12 @@ variable "datastore_id" {
   default     = "local"
 }
 
+variable "template_id" {
+  description = "Proxmox ID of the template VMs are cloned from"
+  type        = number
+  default     = 100
+}
+
 variable "vms" {
   description = "List of VMs to create"
   type = map(object({

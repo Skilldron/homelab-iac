@@ -28,9 +28,17 @@ resource "proxmox_virtual_environment_vm" "this" {
 
   description = "VM managed by Terraform"
 
+  # Must match the template: provider defaults (seabios, pc, virtio-scsi-pci)
+  # would otherwise override the cloned values and break UEFI boot.
+  machine       = "q35"
+  bios          = "ovmf"
+  scsi_hardware = "virtio-scsi-single"
+
   lifecycle {
     ignore_changes = [
-      initialization
+      initialization,
+      # Not readable after an import
+      clone
     ]
   }
 
@@ -46,6 +54,13 @@ resource "proxmox_virtual_environment_vm" "this" {
 
   memory {
     dedicated = var.memory
+  }
+
+  # Inherited from the template, declared so the provider does not remove it
+  efi_disk {
+    datastore_id = var.datastore_id
+    file_format  = "raw"
+    type         = "4m"
   }
 
   network_device {
