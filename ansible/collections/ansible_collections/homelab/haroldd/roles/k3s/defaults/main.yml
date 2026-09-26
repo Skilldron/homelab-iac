@@ -8,6 +8,8 @@ k3s_role: "server"
 k3s_version: ""
 # Required when k3s_role == "agent": URL of an existing server, e.g. "https://192.168.1.10:6443"
 k3s_server_url: ""
+# Kernel mmap limit, Elasticsearch refuses to start below 262144 (1048576 recommended)
+k3s_vm_max_map_count: 1048576
 # Required when k3s_role == "agent": node-token from the server
 # (found on the server at /var/lib/rancher/k3s/server/node-token)
 k3s_token: ""

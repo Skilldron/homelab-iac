@@ -35,6 +35,15 @@
         enabled: true
         state: started
 
+- name: "Set vm.max_map_count for Elasticsearch"
+  become: true
+  ansible.posix.sysctl:
+    name: vm.max_map_count
+    value: "{{ k3s_vm_max_map_count }}"
+    sysctl_file: /etc/sysctl.d/99-k3s.conf
+    state: present
+    reload: true
+
 - name: "Install kubectl binary"
   become: true
   block:
@@ -44,6 +53,8 @@
         return_content: true
       register: k3s_kubectl_stable
       changed_when: false
+      # Read-only request, also needed in --check mode by the next task
+      check_mode: false
       when: k3s_kubectl_version == 'latest'
 
     - name: "Set kubectl version to install"
@@ -66,6 +77,7 @@
       register: k3s_zsh_check
       changed_when: false
       failed_when: false
+      check_mode: false
 
     - name: "Enable kubectl completion in ~/.zshrc"
       ansible.builtin.lineinfile:
@@ -96,6 +108,7 @@
       ansible.builtin.command: k3s --version
       register: k3s_installed_raw
       changed_when: false
+      check_mode: false
       when: k3s_binary.stat.exists
 
     - name: "Set installed K3S version fact"

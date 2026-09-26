@@ -28,6 +28,10 @@ argument_specs:
         type: str
         description: kubectl version to install. "latest" resolves the current stable release, or pin e.g. "v1.27.4".
         default: latest
+      k3s_vm_max_map_count:
+        type: int
+        description: Value of the vm.max_map_count kernel setting, required by Elasticsearch (minimum 262144).
+        default: 1048576
       k3s_home_user:
         type: str
         description: Home directory of the user whose ~/.zshrc receives kubectl completion.
