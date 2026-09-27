@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eck-operator
+  namespace: argocd
+  annotations:
+    description: "Elastic Cloud on Kubernetes operator, manages Elasticsearch and Kibana"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    chart: eck-operator
+    repoURL: https://helm.elastic.co
+    targetRevision: 3.5.0
+  destination:
+    name: "in-cluster"
+    namespace: elastic-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # ECK CRDs are too large for client-side apply (annotation size limit)
+      - ServerSideApply=true
