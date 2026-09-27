@@ -1,0 +1,15 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: longhorn-observability
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain # Keep data
+# Create the volume on the node where the pod is scheduled
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  # Single node Elasticsearch: no replication, R2 backups for backups
+  numberOfReplicas: "1"
+  dataLocality: "best-effort"
+  staleReplicaTimeout: "30"
+  fsType: "ext4"
