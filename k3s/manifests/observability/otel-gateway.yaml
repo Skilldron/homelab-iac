@@ -1,0 +1,159 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-gateway-config
+data:
+  config.yaml: |
+    extensions:
+      # Kube ping to check if the agent is healthy
+      health_check:
+        endpoint: 0.0.0.0:13133
+      # Add bearer token auth protection
+      bearertokenauth/otlp:
+        scheme: Bearer
+        token: ${env:OTLP_BEARER_TOKEN}
+
+    receivers:
+      otlp:
+        protocols:
+          http:
+            endpoint: 0.0.0.0:4318
+            auth:
+              authenticator: bearertokenauth/otlp
+
+    connectors:
+      # Compute APM metrics from traces
+      elasticapm: {}
+
+    processors:
+      batch:
+        send_batch_size: 1000
+        timeout: 1s
+        send_batch_max_size: 1500
+      batch/metrics:
+        send_batch_max_size: 0
+        timeout: 1s
+      elasticapm: {}
+
+    exporters:
+      debug: {}
+      elasticsearch/otel:
+        endpoints:
+          - https://elasticsearch-es-http.observability.svc:9200
+        # API key from secrets, created manually
+        api_key: ${env:ELASTIC_API_KEY}
+        tls:
+          # Use public CA from ECK
+          ca_file: /etc/elastic/certs/ca.crt
+        mapping:
+          mode: otel
+
+    service:
+      extensions: [health_check, bearertokenauth/otlp]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [batch, elasticapm]
+          exporters: [debug, elasticapm, elasticsearch/otel]
+        metrics:
+          receivers: [otlp]
+          processors: [batch/metrics]
+          exporters: [debug, elasticsearch/otel]
+        logs:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [debug, elasticapm, elasticsearch/otel]
+        metrics/aggregated-otel-metrics:
+          receivers: [elasticapm]
+          processors: []
+          exporters: [debug, elasticsearch/otel]
+---
+# Deploy the otel gateway agent
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-gateway
+  labels:
+    app.kubernetes.io/name: otel-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: otel-gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: otel-gateway
+    spec:
+      containers:
+        - name: otel-gateway
+          image: docker.elastic.co/elastic-agent/elastic-agent:9.5.4
+          args: ["--config", "/etc/otelcol/config.yaml"]
+          env:
+            - name: ELASTIC_AGENT_OTEL
+              value: "true"
+            # Inject credentials from secrets
+            - name: ELASTIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: otel-gateway-secrets
+                  key: elastic-api-key
+            - name: OTLP_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: otel-gateway-secrets
+                  key: otlp-token
+            # Avoid RAM limit reach
+            - name: GOMEMLIMIT
+              value: "400MiB"
+          ports:
+            - name: otlp-http
+              containerPort: 4318
+            - name: health
+              containerPort: 13133
+          livenessProbe:
+            httpGet:
+              path: /
+              port: health
+          readinessProbe:
+            httpGet:
+              path: /
+              port: health
+          resources:
+            requests:
+              memory: 512Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otelcol
+              readOnly: true
+            - name: es-ca
+              mountPath: /etc/elastic/certs
+              readOnly: true
+      volumes:
+        # ConfigMap will be file /etc/otelcol/config.yaml
+        - name: config
+          configMap:
+            name: otel-gateway-config
+        # Load CA
+        - name: es-ca
+          secret:
+            secretName: elasticsearch-es-http-certs-public
+            items:
+              - key: ca.crt
+                path: ca.crt
+---
+# Expose the agent endpoint
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-gateway
+spec:
+  # Assign to otel-gateway
+  selector:
+    app.kubernetes.io/name: otel-gateway
+  ports:
+    - name: otlp-http
+      port: 4318
+      targetPort: otlp-http
