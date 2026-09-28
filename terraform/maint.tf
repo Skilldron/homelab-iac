@@ -33,6 +33,7 @@ module "vms" {
 
   cpu_cores   = each.value.cpu
   cpu_sockets = each.value.cpu_sockets
+  cpu_type    = each.value.cpu_type
   memory      = each.value.memory
   tags        = each.value.tags
   ip_address  = each.value.ip_address
