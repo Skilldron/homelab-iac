@@ -32,6 +32,7 @@ variable "vms" {
     gateway     = string
     cpu_sockets = number
     cpu_type    = optional(string, "x86-64-v2-AES")
+    disk_size   = optional(number, 20)
     role        = string
   }))
 }

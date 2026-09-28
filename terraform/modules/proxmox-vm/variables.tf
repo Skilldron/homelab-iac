@@ -70,8 +70,9 @@ variable "memory" {
 }
 
 variable "disk_size" {
-  type    = number
-  default = 20
+  type        = number
+  default     = 20
+  description = "Size of the scsi0 disk in GiB, can only be increased"
 }
 
 variable "ip_address" {

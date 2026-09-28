@@ -56,6 +56,18 @@ resource "proxmox_virtual_environment_vm" "this" {
     dedicated = var.memory
   }
 
+  # Cloned from the template: values differing from the provider defaults
+  # (datastore local-lvm, iothread false) must be set, otherwise they are overridden.
+  # Proxmox can only grow a disk, never shrink it.
+  disk {
+    datastore_id = var.datastore_id
+    interface    = "scsi0"
+    size         = var.disk_size
+    file_format  = "qcow2"
+    iothread     = true
+    discard      = "ignore"
+  }
+
   # Inherited from the template, declared so the provider does not remove it
   efi_disk {
     datastore_id = var.datastore_id

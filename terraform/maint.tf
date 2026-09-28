@@ -35,6 +35,7 @@ module "vms" {
   cpu_sockets = each.value.cpu_sockets
   cpu_type    = each.value.cpu_type
   memory      = each.value.memory
+  disk_size   = each.value.disk_size
   tags        = each.value.tags
   ip_address  = each.value.ip_address
   gateway     = each.value.gateway
