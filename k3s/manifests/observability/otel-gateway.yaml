@@ -36,7 +36,6 @@ data:
       elasticapm: {}
 
     exporters:
-      debug: {}
       elasticsearch/otel:
         endpoints:
           - https://elasticsearch-es-http.observability.svc:9200
@@ -54,19 +53,19 @@ data:
         traces:
           receivers: [otlp]
           processors: [batch, elasticapm]
-          exporters: [debug, elasticapm, elasticsearch/otel]
+          exporters: [elasticapm, elasticsearch/otel]
         metrics:
           receivers: [otlp]
           processors: [batch/metrics]
-          exporters: [debug, elasticsearch/otel]
+          exporters: [elasticsearch/otel]
         logs:
           receivers: [otlp]
           processors: [batch]
-          exporters: [debug, elasticapm, elasticsearch/otel]
+          exporters: [elasticapm, elasticsearch/otel]
         metrics/aggregated-otel-metrics:
           receivers: [elasticapm]
           processors: []
-          exporters: [debug, elasticsearch/otel]
+          exporters: [elasticsearch/otel]
 ---
 # Deploy the otel gateway agent
 apiVersion: apps/v1
