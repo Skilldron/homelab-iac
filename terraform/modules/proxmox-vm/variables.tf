@@ -58,6 +58,12 @@ variable "cpu_sockets" {
   default = 1
 }
 
+variable "cpu_type" {
+  type        = string
+  default     = "x86-64-v2-AES"
+  description = "Emulated CPU model, x86-64-v3 is required by some images (e.g. Elastic Agent 9.x)"
+}
+
 variable "memory" {
   type    = number
   default = 2048
